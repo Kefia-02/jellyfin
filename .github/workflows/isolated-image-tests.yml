@@ -1,0 +1,32 @@
+name: Isolated Jellyfin extraction tests
+on:
+  push:
+    branches:
+      - verify/jellyfin-image-tests-20261121
+permissions:
+  contents: read
+jobs:
+  image-extraction-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact Jellyfin PR head
+        uses: actions/checkout@v4
+        with:
+          ref: fix/avoid-duplicate-attachment-extract-18711-20261121
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify PR head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "6c085c20202b740fb7293979d9b68989f4356ca4"
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run official project regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Jellyfin.MediaEncoding.Tests/Jellyfin.MediaEncoding.Tests.csproj \
+            --configuration Release --verbosity minimal \
+            --filter FullyQualifiedName~ImageExtractionStrategyTests
