@@ -72,6 +72,29 @@ public class MatroskaAttachmentReaderTests
         }
     }
 
+    [Fact]
+    public async Task ActualFfmpegMatroska_CopiesOriginalPng()
+    {
+        // Generated with FFmpeg using MPEG-4 video and an attached cover.png.
+        // Unlike a synthetic EBML stream this also includes SeekHead, CRC, Void, Tracks, Tags, Cues and Cluster.
+        var input = NewTempPath();
+        var output = NewTempPath();
+        try
+        {
+            var mkv = Convert.FromBase64String("GkXfo6NChoEBQveBAULygQRC84EIQoKIbWF0cm9za2FCh4EEQoWBAhhTgGcBAAAAAAAEGBFNm3TPv4S4GAqPTbuLU6uEFUmpZlOsgaFNu4tTq4QWVK5rU6yB7027jFOrhBlBpGlTrIIBjk27jFOrhBJUw2dTrIIC/k27jFOrhBxTu2tTrIID/OwBAAAAAAAARAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFUmpZsm/hNSHQ4gq17GDD0JATYCMTGF2ZjYxLjcuMTAzV0GMTGF2ZjYxLjcuMTAzc6SQpujUw80sL4Mhu66uXA6480SJiECfQAAAAAAAFlSua0CZv4SgdtLzrgEAAAAAAACK14EBc8WIyomHSIY96X6cgQAitZyDdW5kiIEAho9WX01QRUc0L0lTTy9BU1CDgQEj44OEO5rKAOCQsIFAuoFAmoECVbCEVbmBAVXugQDsAQAAAAAAAAIAAGOirwAAAbABAAABtYkTAAABAAAAASAAxI2IAA0CBAgUQwAAAbJMYXZjNjEuMTkuMTAxGUGkaUFqv4ShwWJ0YadBYEZuiWNvdmVyLnBuZ0ZgiWltYWdlL3BuZ0ZcQTmJUE5HDQoaCgAAAA1JSERSAAAAoAAAAFoIAgAAALCkygUAAAAJcEhZcwAAAAEAAAABAE8lxNYAAADrSURBVHic7dEBCQAgEMDAr2Ybc5vEFCKMgwsw2Kx9CJvvBTxlcJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRxncJzBcQbHGRx3AQa6z8t1GQucAAAAAElFTkSuQmCCRq6IHUDzzc1FR50SVMNnQIC/hN+Tzx1zc59jwIBnyJlFo4dFTkNPREVSRIeMTGF2ZjYxLjcuMTAzc3PVY8CLY8WIyomHSIY96X5nyKBFo4dFTkNPREVSRIeTTGF2YzYxLjE5LjEwMSBtcGVnNGfIoUWjiERVUkFUSU9ORIeTMDA6MDA6MDIuMDAwMDAwMDAwAB9DtnXzv4RWsOxm54EAo86BAACAAAABswAQBwAAAbYWDRgtW38bbfxtt/G2378AAKGRgtW38bbfxtt/G237AADBkYLVt/G238bbfxtt+wAA4ZGC1bfxtt/G238bbfujmIED6AAAAAG2a4MffwAAoZ4AAMGeAADhnhxTu2uXv4T/2Wsgu4+zgQC3iveBAfGCA4TwgQk=");
+            await File.WriteAllBytesAsync(input, mkv, TestContext.Current.CancellationToken);
+
+            Assert.True(await MatroskaAttachmentReader.TryExtractAsync(input, "cover.png", output, TestContext.Current.CancellationToken));
+            var image = await File.ReadAllBytesAsync(output, TestContext.Current.CancellationToken);
+            Assert.Equal("9feb7aa589e3f98ed6ce5decc8fba544a8cdf81a879315661dec55cf7760c450", Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(image)).ToLowerInvariant());
+        }
+        finally
+        {
+            File.Delete(input);
+            File.Delete(output);
+        }
+    }
+
     private static string NewTempPath() => Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".mkv");
 
     private static void CreateMatroska(string path, bool largeCluster, string mime)
