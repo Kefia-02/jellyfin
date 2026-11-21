@@ -13,11 +13,11 @@ jobs:
       - name: Checkout exact native MKV branch
         uses: actions/checkout@v4
         with:
-          ref: fix/native-matroska-attachments-18711-20261121
+          ref: fix/avoid-duplicate-attachment-extract-18711-20261121
           persist-credentials: false
       - name: Verify source revision
         shell: bash
-        run: test "$(git rev-parse HEAD)" = "04862da9096a058c31c16b6dc06451e43aa2df3b"
+        run: test "$(git rev-parse HEAD)" = "32b7f9e41bb3f779a3fc4edff8008a42d589fe00"
       - name: Install .NET 10
         uses: actions/setup-dotnet@v4
         with:
