@@ -1,0 +1,36 @@
+name: Isolated Jellyfin EBML post-fix regression
+on:
+  push:
+    branches:
+      - verify/jellyfin-ebml-postfix-20261121
+permissions:
+  contents: read
+jobs:
+  native-ebml-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/avoid-duplicate-attachment-extract-18711-20261121
+          persist-credentials: false
+      - name: Verify exact PR SHA
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "32a8c2b1960799596186314c25c97d3f2003be4e"
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build affected projects with analyzers
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet build MediaBrowser.MediaEncoding/MediaBrowser.MediaEncoding.csproj --configuration Debug --verbosity minimal
+          dotnet build MediaBrowser.Providers/MediaBrowser.Providers.csproj --configuration Debug --verbosity minimal
+      - name: Run image extraction regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Jellyfin.MediaEncoding.Tests/Jellyfin.MediaEncoding.Tests.csproj --configuration Release --verbosity minimal --filter 'FullyQualifiedName~MatroskaAttachmentReaderTests|FullyQualifiedName~ImageExtractionStrategyTests'
+          dotnet test tests/Jellyfin.Providers.Tests/Jellyfin.Providers.Tests.csproj --configuration Release --verbosity minimal --filter FullyQualifiedName~EmbeddedImageProviderTests
