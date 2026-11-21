@@ -17,7 +17,7 @@ jobs:
           persist-credentials: false
       - name: Verify source revision
         shell: bash
-        run: test "$(git rev-parse HEAD)" = "32b7f9e41bb3f779a3fc4edff8008a42d589fe00"
+        run: test "$(git rev-parse HEAD)" = "7d40c4652f8c295b0bbe1c8197fd7ef472e569c1"
       - name: Install .NET 10
         uses: actions/setup-dotnet@v4
         with:
