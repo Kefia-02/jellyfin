@@ -168,7 +168,7 @@ internal static class MatroskaAttachmentReader
         offset = 0;
         length = 0;
         mimeType = string.Empty;
-        string fileName = null;
+        string? fileName = null;
         while (remaining-- > 0 && TryReadHeader(stream, entryEnd, out var id, out var end, out var size, allowUnknownSize: false))
         {
             if (id == FileNameId && size is > 0 and <= 4096)
