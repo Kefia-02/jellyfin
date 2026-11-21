@@ -1,0 +1,34 @@
+name: Isolated Jellyfin native Matroska image regression
+on:
+  push:
+    branches:
+      - verify/jellyfin-native-ebml-20261121
+permissions:
+  contents: read
+jobs:
+  ebml-and-provider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact native MKV branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/native-matroska-attachments-18711-20261121
+          persist-credentials: false
+      - name: Verify source revision
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "d7079e17903b9742e9bebaf910555efa1b43e25b"
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test native EBML and regular video extraction paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Jellyfin.MediaEncoding.Tests/Jellyfin.MediaEncoding.Tests.csproj --configuration Release --verbosity minimal --filter 'FullyQualifiedName~MatroskaAttachmentReaderTests|FullyQualifiedName~ImageExtractionStrategyTests'
+      - name: Test provider image selection and filename routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Jellyfin.Providers.Tests/Jellyfin.Providers.Tests.csproj --configuration Release --verbosity minimal --filter FullyQualifiedName~EmbeddedImageProviderTests
