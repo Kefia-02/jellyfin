@@ -23,8 +23,8 @@ public class MatroskaAttachmentReaderTests
         try
         {
             CreateMatroska(input, largeCluster: false, mime: "image/jpeg");
-            Assert.True(await MatroskaAttachmentReader.TryExtractAsync(input, "COVER.JPG", output, CancellationToken.None));
-            Assert.Equal(_jpeg, await File.ReadAllBytesAsync(output));
+            Assert.True(await MatroskaAttachmentReader.TryExtractAsync(input, "COVER.JPG", output, TestContext.Current.CancellationToken));
+            Assert.Equal(_jpeg, await File.ReadAllBytesAsync(output, TestContext.Current.CancellationToken));
         }
         finally
         {
@@ -41,8 +41,8 @@ public class MatroskaAttachmentReaderTests
         try
         {
             CreateMatroska(input, largeCluster: true, mime: "image/jpeg");
-            Assert.True(await MatroskaAttachmentReader.TryExtractAsync(input, "cover.jpg", output, CancellationToken.None));
-            Assert.Equal(_jpeg, await File.ReadAllBytesAsync(output));
+            Assert.True(await MatroskaAttachmentReader.TryExtractAsync(input, "cover.jpg", output, TestContext.Current.CancellationToken));
+            Assert.Equal(_jpeg, await File.ReadAllBytesAsync(output, TestContext.Current.CancellationToken));
             Assert.True(new FileInfo(input).Length > 128 * 1024 * 1024);
         }
         finally
@@ -62,7 +62,7 @@ public class MatroskaAttachmentReaderTests
         try
         {
             CreateMatroska(input, largeCluster: false, mime: mimeType);
-            Assert.False(await MatroskaAttachmentReader.TryExtractAsync(input, requestedName, output, CancellationToken.None));
+            Assert.False(await MatroskaAttachmentReader.TryExtractAsync(input, requestedName, output, TestContext.Current.CancellationToken));
             Assert.False(File.Exists(output));
         }
         finally
